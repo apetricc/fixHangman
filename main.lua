@@ -165,16 +165,34 @@ local function fillWord( letter )
   printOut[letter].alpha = 1
   printOut[letter]:setFillColor(0,0,1)
   --correctGuesses = 0
+  printOut[letter].alpha = 1
+  printOut[letter]:setFillColor(0,0,1)
+  correctGuesses = 0
 
 end
+--this one didn't work for some reason:
+-- local function ifWinner()
+--     for i = 1, table.getn(printOut), 1 do
+--         if (printOut[i].alpha == 1) then
+--             correctGuesses = correctGuesses + 1
+--         end
+--     end --for length of printOut
+-- end --check if winner
+--so try, try again...
+function checkIfWon()
 
-local function ifWinner()
-    for i = 1, table.getn(printOut), 1 do
+  for i = 1, table.getn(printOut), 1 do
         if (printOut[i].alpha == 1) then
-            correctGuesses = correctGuesses + 1
+          correctGuesses = correctGuesses + 1
         end
-    end --for length of printOut
-end --check if winner
+        --ifWinner()
+        if (correctGuesses == table.getn(printOut)) then
+            winGame()
+        end
+  end--for length of printOut
+end
+
+
   --******************************************************************************
   --CREATE ALPHABET GRID for touch interaction with copy,
   --then compare original array to magic word
@@ -204,18 +222,11 @@ end --check if winner
   					        for j = 1, string.len(magicword),1 do
   					        	if (alphabet[i]==string.sub(magicword,j,j)) then
                         fillWord( j )
-  					        		printOut[j].alpha = 1
-  											printOut[j]:setFillColor(0,0,1)
-  										  correctGuesses = 0
-  											for i = 1, table.getn(printOut), 1 do
-                              if (printOut[i].alpha == 1) then
-                                correctGuesses = correctGuesses + 1
-                              end
-      										  	--ifWinner()
-                              if (correctGuesses == table.getn(printOut)) then
-                                  winGame()
-                              end
-                        end
+  					        		-- printOut[j].alpha = 1
+  											-- printOut[j]:setFillColor(0,0,1)
+  										  -- correctGuesses = 0
+                        checkIfWon()
+
   					        	end --if letter matches index j of magicword
   					        end--for j, length of magicword
 
