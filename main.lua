@@ -26,6 +26,7 @@
   local hangCount = 1
   local correctGuesses = 0
   local winnerText
+  local gameOver
 --stuff for the composer
   --composer.removeScene("hangman")
   --composer.gotoScene( "hangman" )
@@ -144,41 +145,48 @@
       end -- if event began
   end --resetListener(event)
 
-
+--fillLetters() fills a letter used in the alphabet grid
 local function fillLetters( letter )
   newLetter[letter].alpha = 1
   newLetter[letter]:setFillColor(1,0,0)
-end
+end--fillLetters()
 
-local function winGame()
-  hasWon=true
-  winnerText = display.newText("WINNER!", display.contentCenterX,
-  display.contentCenterY, "drewsFont.ttf", 55)
-  winnerText:setFillColor(1,0,0)
+
+local function reset()
   resetButton = display.newImageRect( "images/resetButton.png",100,50 )
   resetButton.x = display.contentCenterX
   resetButton.y = display.contentCenterY +50
   resetButton:addEventListener("touch", resetListener)
 end
 
+
+--winGame() displays a WINNER message upon winning the game
+--and creates an event listener to reset the game (should be further
+--abstracted for reseting the game)
+local function winGame()
+  hasWon=true
+  winnerText = display.newText("WINNER!", display.contentCenterX,
+  display.contentCenterY, "drewsFont.ttf", 55)
+  winnerText:setFillColor(1,0,0)
+  reset()
+end--winGame()
+
+
+
+
+--fillWord makes correctly guessed letters in the magicword appear on the
+--game board scene
 local function fillWord( letter )
   printOut[letter].alpha = 1
   printOut[letter]:setFillColor(0,0,1)
-  --correctGuesses = 0
   printOut[letter].alpha = 1
   printOut[letter]:setFillColor(0,0,1)
   correctGuesses = 0
 
-end
---this one didn't work for some reason:
--- local function ifWinner()
---     for i = 1, table.getn(printOut), 1 do
---         if (printOut[i].alpha == 1) then
---             correctGuesses = correctGuesses + 1
---         end
---     end --for length of printOut
--- end --check if winner
---so try, try again...
+end--fillWord( letter )
+
+--checkIfWon checks if all the letters in the magicword have been correctly
+--guessed and if so, called winGame()
 function checkIfWon()
 
   for i = 1, table.getn(printOut), 1 do
@@ -190,9 +198,36 @@ function checkIfWon()
             winGame()
         end
   end--for length of printOut
+end--checkIfWon()
+
+--testMatches checks if a letter touched from the alphabet grid matches
+--a letter in the magicword
+function testMatches( i )
+  for j = 1, string.len(magicword),1 do
+    if (alphabet[i]==string.sub(magicword,j,j)) then
+      fillWord( j )
+      checkIfWon()
+
+    end --if letter matches index j of magicword
+  end--for j, length of magicword
+end--testMatches()
+
+
+local function hangingTheMan()
+  hangman:setSequence(hangmanFrames[hangCount])
+  hangman:play()
+  --hangman[hangCount].alpha = 1
+  hangCount = hangCount + 1
+  print ("Hang count is: "..hangCount)
+
 end
 
-
+local function displayGameOver()
+    gameOver = display.newText("GAME OVER!", display.contentCenterX,
+    display.contentCenterY, "drewsFont.ttf", 55)
+    gameOver:setFillColor(1,0,0)
+    reset()
+end
   --******************************************************************************
   --CREATE ALPHABET GRID for touch interaction with copy,
   --then compare original array to magic word
@@ -218,36 +253,20 @@ end
                   fillLetters(i)
 
   					    if (string.find(magicword,alphabet[i])~=nil) then
+                    testMatches( i )
 
-  					        for j = 1, string.len(magicword),1 do
-  					        	if (alphabet[i]==string.sub(magicword,j,j)) then
-                        fillWord( j )
-  					        		-- printOut[j].alpha = 1
-  											-- printOut[j]:setFillColor(0,0,1)
-  										  -- correctGuesses = 0
-                        checkIfWon()
+  					    elseif (hangCount < 7) then
+                    hangingTheMan()
 
-  					        	end --if letter matches index j of magicword
-  					        end--for j, length of magicword
+                if (hangCount > 6 and gameOver==nil) then
+					    		  -- gameOver = display.newText("GAME OVER!", display.contentCenterX,
+					    			-- display.contentCenterY, "drewsFont.ttf", 55)
+					    		  -- gameOver:setFillColor(1,0,0)
+                    -- reset()
+                    displayGameOver()
+					    	end--if hangCount > 6, gameOver
 
-  					    elseif (hangCount < 8) then
-  					    	hangman:setSequence(hangmanFrames[hangCount])
-                  hangman:play()
-
-                  --hangman[hangCount].alpha = 1
-
-                  hangCount = hangCount + 1
-
-                  print ("Hang count is: "..hangCount)
-
-                  if (hangCount > 6 and gameOver==nil) then
-  					    		local gameOver = display.newText("GAME OVER!", display.contentCenterX,
-  					    			display.contentCenterY, "drewsFont.ttf", 55)
-  					    		gameOver:setFillColor(1,0,0)
-                    --reset()
-  					    	end--if hangCount > 7, gameOver
-
-                end--end if matches a letter in magicword
+              end--end if matches a letter in magicword, hangCount < 8
   			    end--if event began
 
   			    return true
